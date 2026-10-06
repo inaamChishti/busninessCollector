@@ -1,0 +1,1 @@
+@extends('layouts.app')@section('title','Edit business')@section('subtitle',$business->business_name)@section('content')<div class="panel"><form method="post" action="{{ route('businesses.update',$business) }}">@include('businesses._form')</form></div>@endsection

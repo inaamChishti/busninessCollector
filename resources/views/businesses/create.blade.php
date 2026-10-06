@@ -1,0 +1,1 @@
+@extends('layouts.app')@section('title','Add business')@section('subtitle','Create a record and then run website and email discovery')@section('content')<div class="panel"><form method="post" action="{{ route('businesses.store') }}">@include('businesses._form')</form></div>@endsection

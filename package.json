@@ -1,0 +1,6 @@
+{
+  "name": "business-email-collector",
+  "private": true,
+  "scripts": {"build": "vite build", "dev": "vite"},
+  "devDependencies": {"@vitejs/plugin-basic-ssl": "latest", "axios": "latest", "laravel-vite-plugin": "latest", "vite": "latest"}
+}
