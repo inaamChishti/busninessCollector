@@ -19,6 +19,9 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SetupController;
 use App\Http\Controllers\WikidataController;
 use App\Http\Controllers\WikidataEmailController;
+use App\Http\Controllers\CompanySearchController;
+use App\Http\Controllers\GooglePlacesController;
+use App\Http\Controllers\GooglePlaceEmailsController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
@@ -72,6 +75,26 @@ Route::get('/verify-emails/progress',[VerifyEmailsController::class,'progress'])
     Route::get('/wikidata/emails',[WikidataEmailController::class,'index'])->name('wikidata.emails');
     Route::get('/wikidata/emails/scrape',[WikidataEmailController::class,'scrape'])->name('wikidata.emails.scrape');
     Route::post('/wikidata/emails/store',[WikidataEmailController::class,'store'])->name('wikidata.emails.store');
+
+    // Companies House
+    Route::get('/companies',[CompanySearchController::class,'index'])->name('companies.index');
+    Route::get('/companies/search',[CompanySearchController::class,'search'])->name('companies.search');
+    Route::post('/companies/store',[CompanySearchController::class,'store'])->name('companies.store');
+    Route::get('/companies/saved',[CompanySearchController::class,'saved'])->name('companies.saved');
+
+    // Google Places
+    Route::get('/google-places',[GooglePlacesController::class,'index'])->name('google.index');
+    Route::get('/google-places/search',[GooglePlacesController::class,'search'])->name('google.search');
+    Route::get('/google-places/details',[GooglePlacesController::class,'details'])->name('google.details');
+    Route::post('/google-places/store',[GooglePlacesController::class,'store'])->name('google.store');
+    Route::get('/google-places/saved',[GooglePlacesController::class,'saved'])->name('google.saved');
+    Route::delete('/google-places/saved/{place}',[GooglePlacesController::class,'destroyPlace'])->name('google.place.destroy');
+    Route::get('/google-places/emails/scrape',[GooglePlacesController::class,'scrapeEmails'])->name('google.emails.scrape');
+    Route::post('/google-places/emails/store',[GooglePlacesController::class,'storeEmails'])->name('google.emails.store');
+    Route::get('/google-places/emails',[GooglePlaceEmailsController::class,'index'])->name('google.emails.index');
+    Route::get('/google-places/emails/export',[GooglePlaceEmailsController::class,'export'])->name('google.emails.export');
+    Route::delete('/google-places/emails/{email}',[GooglePlaceEmailsController::class,'destroy'])->name('google.emails.destroy');
+    Route::post('/google-places/emails/bulk-delete',[GooglePlaceEmailsController::class,'destroyBulk'])->name('google.emails.bulk-delete');
 
      Route::get('/overture',[OvertureController::class,'index'])->name('overture.index');
     Route::post('/overture',[OvertureController::class,'store'])->name('overture.store');
@@ -582,3 +605,60 @@ Route::get('/verify-emails/progress',[VerifyEmailsController::class,'progress'])
 //         'data' => $results
 //     ]);
 // });
+
+
+// ── Run all pending migrations on live ──────────────────────────────────────
+Route::get('/run-migrations', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', [
+            '--force' => true,
+            '--pretend' => false,
+        ]);
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'All pending migrations ran successfully.',
+            'output'  => \Illuminate\Support\Facades\Artisan::output(),
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+    }
+});
+
+// ── Run only new Wikidata + Companies + Google migrations ────────────────────
+Route::get('/run-new-migrations', function () {
+    $migrations = [
+        // 'database/migrations/2026_10_06_000001_create_wikidata_businesses_table.php',
+        // 'database/migrations/2026_10_06_000002_create_wikidata_emails_table.php',
+        // 'database/migrations/2026_10_06_000003_create_company_leads_table.php',
+        'database/migrations/2026_10_06_000004_create_google_places_table.php',
+        'database/migrations/2026_10_06_000005_create_google_place_emails_table.php',
+    ];
+
+    $results = [];
+
+    foreach ($migrations as $path) {
+        $tableName = '';
+        preg_match('/create_(\w+)_table/', $path, $m);
+        $tableName = $m[1] ?? basename($path);
+
+        if (\Illuminate\Support\Facades\Schema::hasTable($tableName)) {
+            $results[$tableName] = 'already exists — skipped';
+            continue;
+        }
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', [
+                '--force' => true,
+                '--path'  => $path,
+            ]);
+            $results[$tableName] = 'created ✓ ' . trim(\Illuminate\Support\Facades\Artisan::output());
+        } catch (\Throwable $e) {
+            $results[$tableName] = 'ERROR: ' . $e->getMessage();
+        }
+    }
+
+    return response()->json([
+        'status'  => 'success',
+        'results' => $results,
+    ]);
+});

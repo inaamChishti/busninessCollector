@@ -44,4 +44,13 @@ return [
         'key' => env('FOURSQUARE_API_KEY'),
     ],
 
+    'companies_house' => [
+        'key'      => env('COMPANIES_HOUSE_API_KEY'),
+        'base_url' => 'https://api.company-information.service.gov.uk',
+    ],
+
+    'google_places' => [
+        'key' => env('GOOGLE_PLACES_API_KEY'),
+    ],
+
 ];

@@ -11,6 +11,20 @@
 <a href="{{ route('wikidata.saved') }}" class="{{ request()->routeIs('wikidata.saved')?'active':'' }}">💾 Saved Businesses</a>
 <a href="{{ route('wikidata.emails') }}" class="{{ request()->routeIs('wikidata.emails*')?'active':'' }}">📧 Get Emails</a>
 </div>
+{{-- Companies Businesses sub-menu --}}
+<a href="{{ route('companies.index') }}" class="wd-parent {{ request()->routeIs('companies.*')?'active':'' }}" onclick="this.classList.toggle('open');return true"><span>🏢</span>Companies Businesses <span style="margin-left:auto;font-size:.7rem">{{ request()->routeIs('companies.*')?'▲':'▼' }}</span></a>
+<div class="wd-sub" style="{{ request()->routeIs('companies.*')?'display:flex':'' }}">
+<a href="{{ route('companies.index') }}" class="{{ request()->routeIs('companies.index')||request()->routeIs('companies.search')||request()->routeIs('companies.store')?'active':'' }}">🔍 Search Companies</a>
+<a href="{{ route('companies.saved') }}" class="{{ request()->routeIs('companies.saved')?'active':'' }}">💾 Saved Leads</a>
+</div>
+{{-- Google Places sub-menu --}}
+<a href="{{ route('google.index') }}" class="wd-parent {{ request()->routeIs('google.*')?'active':'' }}" onclick="this.classList.toggle('open');return true"><span>📍</span>Google Places <span style="margin-left:auto;font-size:.7rem">{{ request()->routeIs('google.*')?'▲':'▼' }}</span></a>
+<div class="wd-sub" style="{{ request()->routeIs('google.*')?'display:flex':'' }}">
+<a href="{{ route('google.index') }}" class="{{ request()->routeIs('google.index')||request()->routeIs('google.search')?'active':'' }}">🔍 Search Places</a>
+<a href="{{ route('google.saved') }}" class="{{ request()->routeIs('google.saved')?'active':'' }}">💾 Saved Places</a>
+<!-- <a href="{{ route('google.saved') }}" class="{{ false?'active':'' }}">📧 Get Emails</a> -->
+<a href="{{ route('google.emails.index') }}" class="{{ request()->routeIs('google.emails.index')||request()->routeIs('google.emails.export')?'active':'' }}">📋 Emails List</a>
+</div>
 @php $nav2=[['settings.index','Settings','⚙'],['profile.edit','Profile','◉']]; @endphp
 @foreach($nav2 as $item)@php [$route,$label,$icon]=$item; @endphp<a href="{{ route($route) }}" class="{{ request()->routeIs(str_replace('.index','.*',$route))||request()->routeIs($route)?'active':'' }}"><span>{{ $icon }}</span>{{ $label }}</a>@endforeach
 </nav><form method="post" action="{{ route('logout') }}" class="logout">@csrf<button class="nav-button">↪ Sign out</button></form></aside>
